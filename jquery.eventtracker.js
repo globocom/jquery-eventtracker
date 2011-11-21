@@ -25,9 +25,30 @@
       _.each(events, function(event) {
         if (element.get(0).tagName == "A") {
           element.click(tracker.link.generateStrategy(element, event, options));
+
+        } else if (element.get(0).tagName == "FORM") {
+          element.submit(tracker.form.generateStrategy(element, event, options));
         }
       });
     });
+  }
+
+  // Form Strategy
+
+  $.fn.trackEvents.form = {};
+
+  $.fn.trackEvents.form.generateStrategy = function(element, event, options) {
+    return $.fn.trackEvents.generateStrategy({
+      element: element,
+      event: event,
+      options: options,
+      action: "submit",
+      callback: function() { $.fn.trackEvents.form.callback(element); }
+    });
+  }
+
+  $.fn.trackEvents.form.callback = function(element) {
+    $.fn.trackEvents.callback(element, "submit", $.fn.trackEvents.form);
   }
 
   // Link Strategy
@@ -35,34 +56,17 @@
   $.fn.trackEvents.link = {};
 
   $.fn.trackEvents.link.generateStrategy = function(element, event, options) {
-    var tracker = $.fn.trackEvents;
-    var params = tracker.params;
-
-    var strategy = function(e) {
-      tracker.notifyAnalytics(event);
-
-      if (!options.javaScriptOnly) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        element.addClass(params.cssClassForDefaultEvent);
-        element.off("click", strategy);
-
-        setTimeout(function() { tracker.link.callback(element); }, params.delay);
-      }
-    }
-
-    return strategy;
+    return $.fn.trackEvents.generateStrategy({
+      element: element,
+      event: event,
+      options: options,
+      action: "click",
+      callback: function() { $.fn.trackEvents.link.callback(element); }
+    });
   }
 
   $.fn.trackEvents.link.callback = function(element) {
-    var tracker = $.fn.trackEvents;
-
-    if (!tracker.link.hasDefaultAction(element)) {
-      element.click(tracker.link.defaultAction);
-    }
-
-    element.trigger("click");
+    $.fn.trackEvents.callback(element, "click", $.fn.trackEvents.link);
   }
 
   $.fn.trackEvents.link.defaultAction = function() {
@@ -75,14 +79,50 @@
   $.fn.trackEvents.link.defaultAction.action = "defaultAction";
 
   $.fn.trackEvents.link.hasDefaultAction = function(element) {
-    var events = element.data("events");
-    if (events) {
-      return _.any(events.click, function(click) { return click.handler.action == "defaultAction"; });
-    }
-    return false;
+    return $.fn.trackEvents.hasDefaultAction(element, "click");
   }
 
   // Common code
+  $.fn.trackEvents.generateStrategy = function(opts) {
+    var tracker = $.fn.trackEvents;
+    var params = tracker.params;
+
+    var strategy = function(e) {
+      tracker.notifyAnalytics(opts.event);
+
+      if (!opts.options.javaScriptOnly) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        opts.element.addClass(params.cssClassForDefaultEvent);
+        opts.element.off(opts.action, strategy);
+
+        setTimeout(opts.callback, params.delay);
+      }
+    }
+
+    return strategy;
+  }
+
+  $.fn.trackEvents.callback = function(element, action, namespace) {
+    var tracker = $.fn.trackEvents;
+
+    if (namespace.defaultAction && !namespace.hasDefaultAction(element)) {
+      element[action](namespace.defaultAction);
+    }
+
+    element.trigger(action);
+  }
+
+  $.fn.trackEvents.hasDefaultAction = function(element, action) {
+    var events = element.data("events");
+    if (events) {
+      return _.any(events[action], function(obj) {
+        return obj.handler.action == "defaultAction";
+      });
+    }
+    return false;
+  }
 
   $.fn.trackEvents.locationHref = function(href) {
     document.location.href = href;
@@ -94,7 +134,9 @@
   }
 
   $.fn.trackEvents.notifyAnalytics = function(event) {
-    window._gaq.push(['_trackEvent', event.category, event.action, event.content]);
+    if (window._gaq) {
+      window._gaq.push(['_trackEvent', event.category, event.action, event.content]);
+    }
   }
 
   $.fn.trackEvents.getDataEvents = function(data) {

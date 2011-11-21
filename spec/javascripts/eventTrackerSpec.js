@@ -1,6 +1,6 @@
 describe("EventTracker", function() {
 
-  var link1 = link2 = link3 = null;
+  var link1 = link2 = link3 = form1 = form2 = form3 = null;
 
   var event =   {
     key: "eventSortingActionByDate",
@@ -33,9 +33,24 @@ describe("EventTracker", function() {
       $("<a id='link3' class='trackable' href='#' data-event-sorting-action-by-date='Sort By Date' data-event-javascript-only='true'>Link3</a>")
     );
 
+    $("#jasmine_content").append(
+      $("<form id='form1' action='#' class='trackable' data-event-sorting-action-by-date='Sort By Date'></form>")
+    );
+
+    $("#jasmine_content").append(
+      $("<form id='form2' action='#' class='trackable' data-event-sorting-action-by-date='Sort By Date' data-event-click-action-sort='value'></form>")
+    );
+
+    $("#jasmine_content").append(
+      $("<form id='form1' action='#' class='trackable' data-event-sorting-action-by-date='Sort By Date' data-event-javascript-only='true'></form>")
+    );
+
     link1 = $("#link1");
     link2 = $("#link2");
     link3 = $("#link3");
+    form1 = $("#form1");
+    form2 = $("#form2");
+    form3 = $("#form3");
   });
 
   afterEach(function() {
@@ -254,4 +269,28 @@ describe("EventTracker", function() {
       });
     });
   });
+
+  describe("when tracking form events", function() {
+
+    it("should notify analytics", function() {
+      spyOn($.fn.trackEvents, "notifyAnalytics");
+      $(".trackable").trackEvents();
+      $("#form1").submit();
+      expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalledWith(event);
+    });
+
+    it("should notify multiple events", function() {
+      var spy = spyOn($.fn.trackEvents, "notifyAnalytics");
+      $(".trackable").trackEvents();
+      $("#form2").submit();
+      $("#form2").trigger("submit");
+
+      expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalled();
+      expect(spy.callCount).toEqual(2);
+      expect(spy.argsForCall[0][0].key).toEqual(event.key);
+      expect(spy.argsForCall[1][0].key).toEqual(event2.key);
+    });
+
+  });
+
 });
