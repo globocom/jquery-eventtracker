@@ -26,6 +26,9 @@ describe("EventTracker", function() {
     link1 = $("#link1");
   });
 
+  afterEach(function() {
+    $("#jasmine_content").html("");
+  });
 
   describe("when integrates with jquery", function() {
 
@@ -74,7 +77,7 @@ describe("EventTracker", function() {
 
   });
 
-  describe("when tracking click events", function() {
+  describe("when tracking link events", function() {
 
     it("should notify analytics", function() {
       spyOn($.fn.trackEvents, "notifyAnalytics");
@@ -95,44 +98,94 @@ describe("EventTracker", function() {
       expect(spy.argsForCall[1][0].key).toEqual(event2.key);
     });
 
+    describe("and checking the default action", function() {
+      it("should return false if it does not has the property 'action' with 'defaultAction'", function() {
+        expect($.fn.trackEvents.link.hasDefaultAction(link1)).toBeFalsy();
+      });
+
+      it("should return true if the click event has a property 'action' with 'defaultAction'", function() {
+        link1.click($.fn.trackEvents.link.defaultAction);
+        expect($.fn.trackEvents.link.hasDefaultAction(link1)).toBeTruthy();
+      });
+    });
+
+    describe("and using the default action", function() {
+      beforeEach(function() {
+        spyOn($.fn.trackEvents, "locationHref");
+      });
+
+      it("should change the document.location.href", function() {
+        link1.addClass($.fn.trackEvents.params.cssClassForDefaultEvent);
+        $.fn.trackEvents.link.defaultAction.apply(link1);
+        expect($.fn.trackEvents.locationHref).toHaveBeenCalledWith(link1.attr("href"));
+      });
+
+      it("should works just if 'cssClassForDefaultEvent' is applied", function() {
+        link1.removeClass($.fn.trackEvents.params.cssClassForDefaultEvent);
+        $.fn.trackEvents.link.defaultAction.apply(link1);
+        expect($.fn.trackEvents.locationHref).wasNotCalled();
+      });
+    });
+
+    describe("and using the callback", function() {
+      beforeEach(function() {
+        link1.removeClass($.fn.trackEvents.params.cssClassForDefaultEvent);
+      });
+
+      it("should add default action", function() {
+        $.fn.trackEvents.link.callback(link1);
+        expect($.fn.trackEvents.link.hasDefaultAction(link1)).toBeTruthy();
+      });
+
+      it("should add default action just once", function() {
+        $.fn.trackEvents.link.callback(link1);
+        $.fn.trackEvents.link.callback(link1);
+
+        expect(link1.data("events").click.length).toEqual(1);
+      });
+
+      it("should trigger 'click' events", function() {
+        spyOn($.fn, "trigger");
+        $.fn.trackEvents.link.callback(link1);
+        expect($.fn.trigger).toHaveBeenCalledWith("click");
+      });
+    });
+
+    describe("and using generateStrategy", function() {
+
+      var linkStrategy = null;
+      var e = null;
+      beforeEach(function() {
+        e = $.Event("click");
+        linkStrategy = $.fn.trackEvents.link.generateStrategy(link1, event);
+      });
+
+      describe("and using the generated function", function() {
+        it("should notify analytics", function() {
+          spyOn($.fn.trackEvents, "notifyAnalytics");
+          linkStrategy(e);
+          expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalledWith(event);
+        });
+
+        it("should add 'defaultEvent' class", function() {
+          linkStrategy(e);
+          expect(link1.hasClass($.fn.trackEvents.params.cssClassForDefaultEvent)).toBeTruthy();
+        });
+
+        it("should remove the strategy", function() {
+          spyOn($.fn, "off");
+          linkStrategy(e);
+          expect($.fn.off).toHaveBeenCalledWith("click", linkStrategy);
+        });
+
+        it("should configure a setTimeout", function() {
+          spyOn(window, "setTimeout");
+          linkStrategy(e);
+          expect(window.setTimeout).toHaveBeenCalled();
+        });
+      });
+    });
+
   });
 
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

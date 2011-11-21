@@ -62,7 +62,8 @@
 
   $.fn.trackEvents.link.defaultAction = function() {
     if ($.fn.trackEvents.hasDefaultEvent($(this))) {
-      document.location.href = $(this).attr("href");
+      var href = $(this).attr("href");
+      $.fn.trackEvents.locationHref(href);
     }
   }
 
@@ -77,6 +78,10 @@
   }
 
   // Common code
+
+  $.fn.trackEvents.locationHref = function(href) {
+    document.location.href = href;
+  }
 
   $.fn.trackEvents.hasDefaultEvent = function(element) {
     var params = $.fn.trackEvents.params;
