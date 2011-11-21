@@ -1,11 +1,16 @@
 describe("EventTracker", function() {
 
-  var link1 = null;
+  var link1 = link2 = link3 = null;
+
   var event =   {
     key: "eventSortingActionByDate",
     category: "Sorting",
     action: "By Date",
     content: "Sort By Date"
+  };
+
+  var options = {
+    javaScriptOnly: true
   };
 
   var event2 =   {
@@ -19,11 +24,18 @@ describe("EventTracker", function() {
     $("#jasmine_content").append(
       $("<a id='link1' class='trackable' href='#' data-event-sorting-action-by-date='Sort By Date'>Link1</a>")
     );
+
     $("#jasmine_content").append(
-      $("<a id='link2' class='trackable' href='#' data-event-sorting-action-by-date='Sort By Date' data-event-click-action-sort='value'>Link1</a>")
+      $("<a id='link2' class='trackable' href='#' data-event-sorting-action-by-date='Sort By Date' data-event-click-action-sort='value'>Link2</a>")
+    );
+
+    $("#jasmine_content").append(
+      $("<a id='link3' class='trackable' href='#' data-event-sorting-action-by-date='Sort By Date' data-event-javascript-only='true'>Link3</a>")
     );
 
     link1 = $("#link1");
+    link2 = $("#link2");
+    link3 = $("#link3");
   });
 
   afterEach(function() {
@@ -42,6 +54,15 @@ describe("EventTracker", function() {
     });
 
     describe("and using the 'trackEvents' method", function() {
+      it("should be able to retrieve the tracking options", function() {
+        var options = $.fn.trackEvents.popDataOptions(link3);
+        expect(options.javaScriptOnly).toBeTruthy();
+      });
+
+      it("should retrieve empty tracking options if no tracking options are defined", function() {
+        var options = $.fn.trackEvents.popDataOptions(link1);
+        expect(options.javaScriptOnly).toBeFalsy();
+      });
 
       it("should be able to retrieve the events of an array of data elements", function() {
         expect($.fn.trackEvents.getDataEvents).toBeDefined();
@@ -49,7 +70,6 @@ describe("EventTracker", function() {
         expect(events.length).toEqual(1);
         expect(events[0]).toEqual(event);
       });
-
     });
 
     describe("and using the 'whitespace' method", function() {
@@ -157,35 +177,81 @@ describe("EventTracker", function() {
       var e = null;
       beforeEach(function() {
         e = $.Event("click");
-        linkStrategy = $.fn.trackEvents.link.generateStrategy(link1, event);
       });
 
-      describe("and using the generated function", function() {
-        it("should notify analytics", function() {
-          spyOn($.fn.trackEvents, "notifyAnalytics");
-          linkStrategy(e);
-          expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalledWith(event);
+      describe("without options", function() {
+        beforeEach(function() {
+          linkStrategy = $.fn.trackEvents.link.generateStrategy(link1, event, {});
         });
 
-        it("should add 'defaultEvent' class", function() {
-          linkStrategy(e);
-          expect(link1.hasClass($.fn.trackEvents.params.cssClassForDefaultEvent)).toBeTruthy();
+        describe("and using the generated function", function() {
+          it("should notify analytics", function() {
+            spyOn($.fn.trackEvents, "notifyAnalytics");
+            linkStrategy(e);
+            expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalledWith(event);
+          });
+
+          it("should not stop event propagation", function() {
+            spyOn(e, "preventDefault");
+            spyOn(e, "stopImmediatePropagation");
+
+            linkStrategy(e);
+
+            expect(e.preventDefault).toHaveBeenCalled();
+            expect(e.stopImmediatePropagation).toHaveBeenCalled();
+          });
+
+          it("should add 'defaultEvent' class", function() {
+            linkStrategy(e);
+            expect(link1.hasClass($.fn.trackEvents.params.cssClassForDefaultEvent)).toBeTruthy();
+          });
+
+          it("should remove the strategy", function() {
+            spyOn($.fn, "off");
+            linkStrategy(e);
+            expect($.fn.off).toHaveBeenCalledWith("click", linkStrategy);
+          });
+
+          it("should configure a setTimeout", function() {
+            spyOn(window, "setTimeout");
+            linkStrategy(e);
+            expect(window.setTimeout).toHaveBeenCalled();
+          });
+        });
+      });
+
+      describe("with javascriptOnly option enabled", function() {
+        beforeEach(function() {
+          linkStrategy = $.fn.trackEvents.link.generateStrategy(link3, event, {javaScriptOnly: true});
         });
 
-        it("should remove the strategy", function() {
+        it("should not stop event propagation", function() {
+          spyOn(e, "preventDefault");
+          spyOn(e, "stopImmediatePropagation");
+
+          linkStrategy(e);
+
+          expect(e.preventDefault).not.toHaveBeenCalled();
+          expect(e.stopImmediatePropagation).not.toHaveBeenCalled();
+        });
+
+        it("should not 'defaultEvent' class", function() {
+          linkStrategy(e);
+          expect(link3.hasClass($.fn.trackEvents.params.cssClassForDefaultEvent)).toBeFalsy();
+        });
+
+        it("should not remove the strategy function from the event chain", function() {
           spyOn($.fn, "off");
           linkStrategy(e);
-          expect($.fn.off).toHaveBeenCalledWith("click", linkStrategy);
+          expect($.fn.off).not.toHaveBeenCalled();
         });
 
-        it("should configure a setTimeout", function() {
+        it("should not configure a setTimeout", function() {
           spyOn(window, "setTimeout");
           linkStrategy(e);
-          expect(window.setTimeout).toHaveBeenCalled();
+          expect(window.setTimeout).not.toHaveBeenCalled();
         });
       });
     });
-
   });
-
 });

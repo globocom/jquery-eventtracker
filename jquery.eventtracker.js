@@ -18,11 +18,13 @@
     return this.each (function() {
       var element = $(this);
       var data = element.data();
+
+      var options = tracker.popDataOptions(element);
       var events = tracker.getDataEvents(data);
 
       _.each(events, function(event) {
         if (element.get(0).tagName == "A") {
-          element.click(tracker.link.generateStrategy(element, event));
+          element.click(tracker.link.generateStrategy(element, event, options));
         }
       });
     });
@@ -32,19 +34,22 @@
 
   $.fn.trackEvents.link = {};
 
-  $.fn.trackEvents.link.generateStrategy = function(element, event) {
+  $.fn.trackEvents.link.generateStrategy = function(element, event, options) {
     var tracker = $.fn.trackEvents;
     var params = tracker.params;
 
     var strategy = function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-
       tracker.notifyAnalytics(event);
-      element.addClass(params.cssClassForDefaultEvent);
-      element.off("click", strategy);
 
-      setTimeout(function() { tracker.link.callback(element); }, params.delay);
+      if (!options.javaScriptOnly) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        element.addClass(params.cssClassForDefaultEvent);
+        element.off("click", strategy);
+
+        setTimeout(function() { tracker.link.callback(element); }, params.delay);
+      }
     }
 
     return strategy;
@@ -107,6 +112,24 @@
       };
     });
   }
+
+  $.fn.trackEvents.popDataOptions = function(element) {
+    var data = element.data();
+
+    var tracker = $.fn.trackEvents;
+    var optionNames = {javaScriptOnly: "eventJavascriptOnly"};
+
+    return _.tap({}, function(obj) {
+      _.each(_.keys(optionNames), function(optName) {
+        var optAttr = optionNames[optName];
+        var optValue = data[optAttr];
+
+        obj[optName] = optValue ? optValue : null;
+
+        element.removeData(optAttr);
+      });
+    });
+  };
 
   $.fn.trackEvents.whitespace = function(string) {
     return string.replace(/([A-Z])/g, " $1").replace(/^\s+/, '').replace(/\s+$/, '');
