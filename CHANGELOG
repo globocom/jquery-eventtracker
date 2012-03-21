@@ -1,3 +1,6 @@
+0.2.1
+  - uses the current value in tag data attribute
+
 0.2.0
   - tracking form
 
