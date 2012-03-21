@@ -17,10 +17,9 @@
 
     return this.each (function() {
       var element = $(this);
-      var data = element.data();
 
       var options = tracker.popDataOptions(element);
-      var events = tracker.getDataEvents(data);
+      var events = tracker.getDataEvents(element);
 
       _.each(events, function(event) {
         if (element.get(0).tagName == "A") {
@@ -88,7 +87,12 @@
     var params = tracker.params;
 
     var strategy = function(e) {
-      tracker.notifyAnalytics(opts.event);
+      var event = opts.event;
+
+      var eventAttr = $.fn.trackEvents.keyToTagAttr(opts.event.key);
+      event.content = $(this).attr(eventAttr);
+
+      tracker.notifyAnalytics(event);
 
       if (!opts.options.javaScriptOnly) {
         e.preventDefault();
@@ -139,9 +143,11 @@
     }
   }
 
-  $.fn.trackEvents.getDataEvents = function(data) {
+  $.fn.trackEvents.getDataEvents = function(element) {
+    var data = element.data();
     var tracker = $.fn.trackEvents;
     var events = _.filter(_.keys(data), function(key) { return !!key.match(/^event/); });
+
     return _.map(events, function(eventName) {
       var elements = eventName.split(/[aA]ction/);
       var category = tracker.whitespace(elements[0].replace(/^event/, ''));
@@ -175,6 +181,10 @@
 
   $.fn.trackEvents.whitespace = function(string) {
     return string.replace(/([A-Z])/g, " $1").replace(/^\s+/, '').replace(/\s+$/, '');
+  },
+
+  $.fn.trackEvents.keyToTagAttr = function(string) {
+    return "data-" + string.replace(/([A-Z])/g, "-$1").toLowerCase();
   }
 
 })(jQuery);

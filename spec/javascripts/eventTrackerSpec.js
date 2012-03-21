@@ -1,26 +1,26 @@
 describe("EventTracker", function() {
 
-  var link1 = link2 = link3 = form1 = form2 = form3 = null;
-
-  var event =   {
-    key: "eventSortingActionByDate",
-    category: "Sorting",
-    action: "By Date",
-    content: "Sort By Date"
-  };
-
-  var options = {
-    javaScriptOnly: true
-  };
-
-  var event2 =   {
-    key: "eventClickActionSort",
-    category: "Click",
-    action: "Sort",
-    content: "value"
-  };
+  var event = event2 = options = link1 = link2 = link3 = form1 = form2 = form3 = null;
 
   beforeEach(function() {
+    event =   {
+      key: "eventSortingActionByDate",
+      category: "Sorting",
+      action: "By Date",
+      content: "Sort By Date"
+    };
+
+    options = {
+      javaScriptOnly: true
+    };
+
+    event2 =   {
+      key: "eventClickActionSort",
+      category: "Click",
+      action: "Sort",
+      content: "value"
+    };
+
     $("#jasmine_content").append(
       $("<a id='link1' class='trackable' href='#' data-event-sorting-action-by-date='Sort By Date'>Link1</a>")
     );
@@ -81,7 +81,7 @@ describe("EventTracker", function() {
 
       it("should be able to retrieve the events of an array of data elements", function() {
         expect($.fn.trackEvents.getDataEvents).toBeDefined();
-        var events = $.fn.trackEvents.getDataEvents(link1.data());
+        var events = $.fn.trackEvents.getDataEvents(link1);
         expect(events.length).toEqual(1);
         expect(events[0]).toEqual(event);
       });
@@ -94,6 +94,12 @@ describe("EventTracker", function() {
         expect($.fn.trackEvents.whitespace("SomeWord")).toEqual("Some Word");
       });
 
+    });
+
+    describe("converting event key to tag attr", function() {
+      it("should transform 'eventSortingActionByDate' into 'data-event-sorting-action-by-date'", function() {
+        expect($.fn.trackEvents.keyToTagAttr("eventSortingActionByDate")).toEqual("data-event-sorting-action-by-date");
+      });
     });
 
     describe("and using the 'notifyAnalytics' method", function() {
@@ -115,6 +121,16 @@ describe("EventTracker", function() {
   describe("when tracking link events", function() {
 
     it("should notify analytics", function() {
+      spyOn($.fn.trackEvents, "notifyAnalytics");
+      $(".trackable").trackEvents();
+      $("#link1").click();
+      expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalledWith(event);
+    });
+
+    it("should use the content specified in the link tag", function() {
+      $("#link1").attr("data-event-sorting-action-by-date", "some-other-value");
+      event.content = "some-other-value";
+
       spyOn($.fn.trackEvents, "notifyAnalytics");
       $(".trackable").trackEvents();
       $("#link1").click();
