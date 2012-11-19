@@ -114,6 +114,17 @@ describe("EventTracker", function() {
         expect(window._gaq[0]).toEqual(['_trackEvent', event.category, event.action, event.content]);
       });
 
+      it("should transform 'event attributes' into 'string'", function() {
+        event.content = 123;
+        $.fn.trackEvents.notifyAnalytics(event);
+        expect(window._gaq[0]).toEqual(['_trackEvent', event.category, event.action, "123"]);
+      });
+
+      it("should return empty string when content method undefined", function() {
+        event.content = undefined;
+        $.fn.trackEvents.notifyAnalytics(event);
+        expect(window._gaq[0]).toEqual(['_trackEvent', event.category, event.action, ""]);
+      });
     });
 
   });

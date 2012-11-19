@@ -138,8 +138,12 @@
   }
 
   $.fn.trackEvents.notifyAnalytics = function(event) {
+    var category = event.category.toString();
+    var action = event.action.toString();
+    var content = (event.content === undefined) ? "" : event.content.toString();
+
     if (window._gaq) {
-      window._gaq.push(['_trackEvent', event.category, event.action, event.content]);
+      window._gaq.push(['_trackEvent', category, action, content]);
     }
   }
 

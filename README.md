@@ -15,7 +15,7 @@
 * [jQuery](http://jquery.com) 1.7.2
 * [Underscore.js](http://underscorejs.org/) 1.4.2
 
-## In a nutshel
+## In a nutshell
 
 This is a simple example of how to use the plugin
 
