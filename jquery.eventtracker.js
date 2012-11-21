@@ -1,7 +1,7 @@
 /*!
  * EventTracker - is a jQuery plugin wrapper for Google Analytics custom event tracker
  * https://github.com/globocom/jquery-eventtracker
- * version: v0.2.0
+ * version: v0.2.2
  */
 
 (function($){
