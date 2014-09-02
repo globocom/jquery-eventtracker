@@ -11,9 +11,9 @@
 #   - dist/**/*.js
 #
 src_files:
-    - jquery.js
-    - underscore.js
-    - jquery.eventtracker.js
+    - vendor/jquery.js
+    - vendor/underscore.js
+    - lib/jquery.eventtracker.js
 
 # stylesheets
 #
