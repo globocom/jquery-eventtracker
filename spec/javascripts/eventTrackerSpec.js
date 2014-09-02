@@ -155,9 +155,9 @@ describe("EventTracker", function() {
       $("#link2").trigger("click");
 
       expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalled();
-      expect(spy.callCount).toEqual(2);
-      expect(spy.argsForCall[0][0].key).toEqual(event.key);
-      expect(spy.argsForCall[1][0].key).toEqual(event2.key);
+      expect(spy.calls.count()).toEqual(2);
+      expect(spy.calls.all()[0].args[0].key).toEqual(event.key);
+      expect(spy.calls.all()[1].args[0].key).toEqual(event2.key);
     });
 
     describe("and checking the default action", function() {
@@ -185,7 +185,7 @@ describe("EventTracker", function() {
       it("should works just if 'cssClassForDefaultEvent' is applied", function() {
         link1.removeClass($.fn.trackEvents.params.cssClassForDefaultEvent);
         $.fn.trackEvents.link.defaultAction.apply(link1);
-        expect($.fn.trackEvents.locationHref).wasNotCalled();
+        expect($.fn.trackEvents.locationHref).not.toHaveBeenCalled();
       });
     });
 
@@ -313,9 +313,9 @@ describe("EventTracker", function() {
       $("#form2").trigger("submit");
 
       expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalled();
-      expect(spy.callCount).toEqual(2);
-      expect(spy.argsForCall[0][0].key).toEqual(event.key);
-      expect(spy.argsForCall[1][0].key).toEqual(event2.key);
+      expect(spy.calls.count()).toEqual(2);
+      expect(spy.calls.all()[0].args[0].key).toEqual(event.key);
+      expect(spy.calls.all()[1].args[0].key).toEqual(event2.key);
     });
 
   });
