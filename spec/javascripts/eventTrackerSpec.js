@@ -130,6 +130,9 @@ describe("EventTracker", function() {
   });
 
   describe("when tracking link events", function() {
+    beforeEach(function() {
+      window._gaq = [];
+    });
 
     it("should notify analytics", function() {
       spyOn($.fn.trackEvents, "notifyAnalytics");

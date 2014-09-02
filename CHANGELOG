@@ -1,3 +1,9 @@
+v0.2.3
+  - Upgrading to Ruby 2
+  - Remove Rspec
+  - Update Jasmine from 1.2 to 2.0
+  - Showing Travis build status
+
 v0.2.2
   - Transform event attr in a correct format on notifyAnalytics
 
