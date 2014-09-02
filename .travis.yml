@@ -1,0 +1,18 @@
+language: ruby
+script: "bundle exec rake jasmine:ci"
+env:
+  - CI=true
+rvm:
+  - 2.0.0
+gemfile:
+  - Gemfile
+notifications:
+  recipients:
+    - daniel.acfilho@gmail.com
+branches:
+  only:
+    - master
+matrix:
+  allow_failures:
+    - rvm: 2.0.0
+      gemfile: Gemfile
