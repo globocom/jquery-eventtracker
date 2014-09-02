@@ -1,4 +1,6 @@
-# jQuery Eventtracker 
+[![Build Status](https://travis-ci.org/globocom/jquery-eventtracker.svg)](https://travis-ci.org/globocom/jquery-eventtracker)
+
+# jQuery Eventtracker
 
 `jquery.eventtracker` is a jQuery plugin wrapper for Google Analytics custom event tracker
 
