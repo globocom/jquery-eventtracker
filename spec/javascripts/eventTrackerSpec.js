@@ -159,8 +159,11 @@ describe("EventTracker", function() {
 
       expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalled();
       expect(spy.calls.count()).toEqual(2);
-      expect(spy.calls.all()[0].args[0].key).toEqual(event.key);
-      expect(spy.calls.all()[1].args[0].key).toEqual(event2.key);
+
+      var allArgs = [spy.calls.argsFor(0)[0].key, spy.calls.argsFor(1)[0].key];
+
+      expect(allArgs[allArgs.indexOf(event.key)]).toEqual(event.key);
+      expect(allArgs[allArgs.indexOf(event2.key)]).toEqual(event2.key);
     });
 
     describe("and checking the default action", function() {
@@ -317,8 +320,11 @@ describe("EventTracker", function() {
 
       expect($.fn.trackEvents.notifyAnalytics).toHaveBeenCalled();
       expect(spy.calls.count()).toEqual(2);
-      expect(spy.calls.all()[0].args[0].key).toEqual(event.key);
-      expect(spy.calls.all()[1].args[0].key).toEqual(event2.key);
+
+      var allArgs = [spy.calls.argsFor(0)[0].key, spy.calls.argsFor(1)[0].key];
+
+      expect(allArgs[allArgs.indexOf(event.key)]).toEqual(event.key);
+      expect(allArgs[allArgs.indexOf(event2.key)]).toEqual(event2.key);
     });
 
   });
