@@ -12,7 +12,7 @@
 #
 src_files:
   - vendor/jquery.js
-  - vendor/underscore.js
+  - vendor/localforage.min.js
   - lib/jquery.eventtracker.js
 
 # stylesheets
