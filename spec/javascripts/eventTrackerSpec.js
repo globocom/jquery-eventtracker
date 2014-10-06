@@ -1,7 +1,8 @@
 describe("eventTracker", function() {
-  var element;
+  var element, plugin, pluginName;
 
   beforeEach(function() {
+    pluginName = "eventTracker";
     element = sandbox();
     $("body").append(element);
   });
@@ -25,15 +26,13 @@ describe("eventTracker", function() {
   });
 
   describe("Plugin setup", function() {
-    beforeEach(function() {
-      element.eventTracker();
-    });
-
     it("should expose the 'eventTracker'", function() {
+      element.eventTracker();
       expect($.fn.eventTracker).toBeDefined();
     });
 
     it("should configure the element data", function() {
+      element.eventTracker();
       expect(element.data("eventTracker").element).toEqual(element[0]);
     });
   });
@@ -45,8 +44,40 @@ describe("eventTracker", function() {
       element.eventTracker();
     });
 
-    it("should clear eventTracker events on localStorage", function() {
+    it("should clear eventTracker events on local storage", function() {
       expect(localforage.removeItem).toHaveBeenCalledWith("eventTracker");
+    });
+  });
+
+  describe("when tracking link events", function() {
+    beforeEach(function() {
+      spyOn(localforage, "setItem");
+
+      $("#jasmine_content").append(
+        $('<a href="#" class="trackable" data-track-event-button-action-click="nav-buttons">Link1</a>')
+      );
+
+      $("#jasmine_content").append(
+        $('<a href="#" class="trackable" data-track-event-header-action-click="header buttons">Link2</a>')
+      );
+
+      $("#jasmine_content").append(
+        $('<a href="#" class="trackable" data-track-event-menu-action-click="menu itens">Link3</a>')
+      );
+
+      $(".trackable").eventTracker();
+    });
+
+    it("should saves data to local storage", function() {
+      $(".trackable").first().click();
+
+      expect(localforage.setItem).toHaveBeenCalled();
+    });
+
+    it("should set event with category and action", function() {
+      $(".trackable").first().click();
+
+      expect(localforage.setItem).toHaveBeenCalledWith(pluginName, [{category: 'Button', action: 'Click'}], jasmine.any(Function));
     });
   });
 });
