@@ -53,15 +53,15 @@ describe("eventTracker", function() {
     beforeEach(function() {
       spyOn(localforage, "setItem");
 
-      $("#jasmine_content").append(
+      $("#sandbox").append(
         $('<a href="#" class="trackable" data-track-event-button-action-click="nav-buttons">Link1</a>')
       );
 
-      $("#jasmine_content").append(
+      $("#sandbox").append(
         $('<a href="#" class="trackable" data-track-event-header-action-click="header buttons">Link2</a>')
       );
 
-      $("#jasmine_content").append(
+      $("#sandbox").append(
         $('<a href="#" class="trackable" data-track-event-menu-action-click="menu itens">Link3</a>')
       );
 
