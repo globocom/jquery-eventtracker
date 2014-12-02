@@ -7,6 +7,7 @@ describe("eventTracker", function() {
     $element = $('<a href="#">Element</a>');
 
     $("body").append($element);
+    window._gaq = [];
   });
 
   afterEach(function() {
@@ -56,6 +57,26 @@ describe("eventTracker", function() {
     });
   });
 
+  describe("when tracking events on local storage", function() {
+    beforeEach(function() {
+      spyOn(localforage, "getItem").and.callFake(function(pluginName, callback) {
+        callback(null, [{category: "Button", action: "Click"}]);
+      });
+
+      spyOn(window._gaq, "push");
+
+      $element.eventTracker();
+    });
+
+    it("should get itens to tracking", function() {
+      expect(localforage.getItem).toHaveBeenCalledWith("eventTracker", jasmine.any(Function));
+    });
+
+    it("should send a Google Analytics event", function() {
+      expect(window._gaq.push).toHaveBeenCalledWith(['_trackEvent', {category: 'Button', action: 'Click'}]);
+    });
+  });
+
   describe("when tracking link events", function() {
     beforeEach(function() {
       var eventContainer = $("<div>", {id: "event-container"});
@@ -72,6 +93,10 @@ describe("eventTracker", function() {
         $('<a href="#" class="trackable" data-track-event-menu-action-click="menu itens" data-other-event="no event">Link3</a>')
       );
 
+      eventContainer.append(
+        $('<a href="#" class="trackable" data-other-event="no event">Link3</a>')
+      );
+
       $("body").append(eventContainer);
 
       spyOn(localforage, "setItem");
@@ -82,7 +107,7 @@ describe("eventTracker", function() {
       $("#event-container").remove();
     });
 
-    it("should saves data to local storage", function() {
+    it("should save data to local storage", function() {
       $(".trackable").first().click();
 
       expect(localforage.setItem).toHaveBeenCalled();
@@ -94,10 +119,10 @@ describe("eventTracker", function() {
       expect(localforage.setItem).toHaveBeenCalledWith(pluginName, [{category: 'Button', action: 'Click'}], jasmine.any(Function));
     });
 
-    it("should not configure a nother event", function() {
-      $($(".trackable")[2]).click();
+    it("should not tracking another event", function() {
+      $($(".trackable")[3]).click();
 
-      expect(localforage.setItem).not.toHaveBeenCalledWith(pluginName, [{category: 'Button', action: 'Click'}], jasmine.any(Function));
+      expect(localforage.setItem).not.toHaveBeenCalled();
     });
   });
 });
