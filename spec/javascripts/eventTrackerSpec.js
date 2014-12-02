@@ -1,39 +1,46 @@
 describe("eventTracker", function() {
-  var element, plugin, pluginName;
+  var $element, pluginName;
 
   beforeEach(function() {
     pluginName = "eventTracker";
-    element = sandbox();
-    $("body").append(element);
+
+    $element = $('<a href="#">Element</a>');
+
+    $("body").append($element);
+  });
+
+  afterEach(function() {
+    $element.remove();
   });
 
   describe("when integrates with jquery", function() {
     it("should configure plugin", function() {
       spyOn($, "data");
-      element.eventTracker();
-      expect($.data).toHaveBeenCalledWith(element[0], 'eventTracker', jasmine.any(Object));
+      $element.eventTracker();
+
+      expect($.data).toHaveBeenCalledWith($element[0], 'eventTracker', jasmine.any(Object));
     });
 
     describe("when the plugin is configured", function() {
       it("should be set once", function() {
         spyOn($, "data").and.returnValue(jasmine.any(Object));
-        element.eventTracker();
+        $element.eventTracker();
 
         expect($.data.calls.count()).toEqual(1);
-        expect($.data).not.toHaveBeenCalledWith(element[0], 'eventTracker', jasmine.any(Object));
+        expect($.data).not.toHaveBeenCalledWith($element[0], 'eventTracker', jasmine.any(Object));
       });
     });
   });
 
   describe("Plugin setup", function() {
     it("should expose the 'eventTracker'", function() {
-      element.eventTracker();
+      $element.eventTracker();
       expect($.fn.eventTracker).toBeDefined();
     });
 
     it("should configure the element data", function() {
-      element.eventTracker();
-      expect(element.data("eventTracker").element).toEqual(element[0]);
+      $element.eventTracker();
+      expect($element.data("eventTracker").element).toEqual($element[0]);
     });
   });
 
@@ -41,7 +48,7 @@ describe("eventTracker", function() {
     beforeEach(function() {
       spyOn(localforage, "removeItem");
 
-      element.eventTracker();
+      $element.eventTracker();
     });
 
     it("should clear eventTracker events on local storage", function() {
@@ -51,21 +58,28 @@ describe("eventTracker", function() {
 
   describe("when tracking link events", function() {
     beforeEach(function() {
-      spyOn(localforage, "setItem");
+      var eventContainer = $("<div>", {id: "event-container"});
 
-      $("#sandbox").append(
+      eventContainer.append(
         $('<a href="#" class="trackable" data-track-event-button-action-click="nav-buttons">Link1</a>')
       );
 
-      $("#sandbox").append(
+      eventContainer.append(
         $('<a href="#" class="trackable" data-track-event-header-action-click="header buttons">Link2</a>')
       );
 
-      $("#sandbox").append(
-        $('<a href="#" class="trackable" data-track-event-menu-action-click="menu itens">Link3</a>')
+      eventContainer.append(
+        $('<a href="#" class="trackable" data-track-event-menu-action-click="menu itens" data-other-event="no event">Link3</a>')
       );
 
+      $("body").append(eventContainer);
+
+      spyOn(localforage, "setItem");
       $(".trackable").eventTracker();
+    });
+
+    afterEach(function() {
+      $("#event-container").remove();
     });
 
     it("should saves data to local storage", function() {
@@ -78,6 +92,12 @@ describe("eventTracker", function() {
       $(".trackable").first().click();
 
       expect(localforage.setItem).toHaveBeenCalledWith(pluginName, [{category: 'Button', action: 'Click'}], jasmine.any(Function));
+    });
+
+    it("should not configure a nother event", function() {
+      $($(".trackable")[2]).click();
+
+      expect(localforage.setItem).not.toHaveBeenCalledWith(pluginName, [{category: 'Button', action: 'Click'}], jasmine.any(Function));
     });
   });
 });
