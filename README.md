@@ -14,7 +14,7 @@
 
 ## Dependencies
 
-* [jQuery](http://jquery.com) 1.7.2
+* [jQuery](http://jquery.com) 1.11.0
 * [Underscore.js](http://underscorejs.org/) 1.4.2
 
 ## In a nutshell
