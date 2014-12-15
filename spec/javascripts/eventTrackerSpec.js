@@ -209,7 +209,7 @@ describe("EventTracker", function() {
         $.fn.trackEvents.link.callback(link1);
         $.fn.trackEvents.link.callback(link1);
 
-        expect(link1.data("events").click.length).toEqual(1);
+        expect($._data(link1.get(0),"events").click.length).toEqual(1);
       });
 
       it("should trigger 'click' events", function() {
