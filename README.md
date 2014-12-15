@@ -38,12 +38,18 @@ HTML:
 ````html
 <a href="/to/url" class="tracking" data-event-category-action-click="content">Link</a>
 ````
+optional for handling jquery ajax request
+
+````html
+<a href="/to/url" class="tracking" data-event-category-action-click="content" data-event-javascript-only="true">Link</a>
+````
 
 Javascript:
 
 ````javascript
 $(".tracking").trackEvents({
-  delay: 250
+  delay: 250,
+  accountPrefix: "all."
 });
 ````
 
