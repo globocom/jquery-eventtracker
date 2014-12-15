@@ -125,6 +125,13 @@ describe("EventTracker", function() {
         $.fn.trackEvents.notifyAnalytics(event);
         expect(window._gaq[0]).toEqual(['_trackEvent', event.category, event.action, ""]);
       });
+
+      it("should push the correct param account prefix when param is defined", function() {
+        var exampleAccountPrefix = "all.";
+        $(".trackable").trackEvents({accountPrefix: exampleAccountPrefix});
+        $.fn.trackEvents.notifyAnalytics(event);
+        expect(window._gaq[0]).toEqual([exampleAccountPrefix + '_trackEvent', event.category, event.action, event.content]);
+      });
     });
 
   });
